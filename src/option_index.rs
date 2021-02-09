@@ -60,3 +60,68 @@ impl<T> OptionIndex<T> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::OptionIndex;
+    use alloc::vec;
+
+    fn make_some<T>(t: T) -> OptionIndex<T> {
+        OptionIndex::Some(t)
+    }
+    fn make_idx(idx: usize) -> OptionIndex<usize> {
+        OptionIndex::Index(idx)
+    }
+    fn make_noidx() -> OptionIndex<usize> {
+        OptionIndex::NoIndex
+    }
+
+    #[test]
+    fn test_is_inner() {
+        assert!(make_some(0).is_inner());
+        assert!(!make_idx(0).is_inner());
+        assert!(!make_noidx().is_inner());
+    }
+
+    #[test]
+    fn test_as_ref() {
+        let opt = make_some(vec![0, 1]);
+        assert_eq!(opt.as_ref().into_inner().unwrap()[..], [0, 1]);
+
+        assert_eq!(make_idx(1).as_ref(), OptionIndex::Index(1));
+        assert_eq!(make_noidx().as_ref(), OptionIndex::NoIndex);
+    }
+
+    #[test]
+    fn test_as_mut() {
+        let mut opt = make_some(0);
+        *opt.as_mut().into_inner().unwrap() = 1;
+        assert_eq!(opt.into_inner().unwrap(), 1);
+
+        assert_eq!(make_idx(1).as_mut(), OptionIndex::Index(1));
+        assert_eq!(make_noidx().as_mut(), OptionIndex::NoIndex)
+    }
+
+    #[test]
+    fn test_take() {
+        for i in vec![make_some(0), make_idx(1), make_noidx()] {
+            let mut opt = i;
+            assert_eq!(opt.take(), i);
+            assert_eq!(opt, make_noidx());
+        }
+    }
+
+    #[test]
+    fn test_into_inner() {
+        assert_eq!(make_some(2).into_inner(), Some(2));
+        assert_eq!(make_idx(0).into_inner(), None);
+        assert_eq!(make_noidx().into_inner(), None);
+    }
+
+    #[test]
+    fn test_into_index() {
+        assert_eq!(make_idx(2).into_index(), Some(2));
+        assert_eq!(make_some(0).into_index(), None);
+        assert_eq!(make_noidx().into_index(), None);
+    }
+}
