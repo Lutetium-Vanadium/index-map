@@ -1,0 +1,7 @@
+[package]
+name = "index-map"
+version = "0.1.0"
+authors = ["Lutetium-Vanadium"]
+edition = "2018"
+
+[dependencies]
