@@ -82,7 +82,7 @@ impl<T> IndexMap<T> {
             head
         } else {
             self.data.push(OptionIndex::Some(value));
-            self.data.len()
+            self.data.len() - 1
         }
     }
 
