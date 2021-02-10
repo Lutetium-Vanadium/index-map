@@ -191,3 +191,102 @@ impl<T> IndexMap<T> {
         <&mut IndexMap<T>>::into_iter(self)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::IndexMap;
+
+    #[test]
+    fn test_iter() {
+        let mut map = IndexMap::new();
+        let a = map.insert("a");
+        let b = map.insert("b");
+        let c = map.insert("c");
+        map.remove(b);
+        let mut iter = map.iter().map(|(i, v)| (i, *v));
+        assert_eq!(iter.next(), Some((a, "a")));
+        assert_eq!(iter.next(), Some((c, "c")));
+        assert_eq!(iter.next(), None);
+
+        assert_eq!(b, map.insert("b"));
+        let mut iter = map.iter().map(|(i, v)| (i, *v));
+        assert_eq!(iter.next(), Some((a, "a")));
+        assert_eq!(iter.next(), Some((b, "b")));
+        assert_eq!(iter.next(), Some((c, "c")));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_iter_mut() {
+        let mut map = IndexMap::new();
+        let a = map.insert(1);
+        let b = map.insert(2);
+        let c = map.insert(3);
+        map.iter_mut().for_each(|(_, val)| *val *= 2);
+
+        let mut map = map.iter().map(|(i, v)| (i, *v));
+
+        assert_eq!(map.next(), Some((a, 2)));
+        assert_eq!(map.next(), Some((b, 4)));
+        assert_eq!(map.next(), Some((c, 6)));
+        assert_eq!(map.next(), None);
+    }
+
+    #[test]
+    fn test_keys() {
+        let mut map = IndexMap::new();
+        let a = map.insert("a");
+        let b = map.insert("b");
+        let c = map.insert("c");
+        map.remove(b);
+
+        let mut keys = map.keys();
+        assert_eq!(keys.next(), Some(a));
+        assert_eq!(keys.next(), Some(c));
+        assert_eq!(keys.next(), None);
+
+        assert_eq!(b, map.insert("b"));
+
+        let mut keys = map.keys();
+        assert_eq!(keys.next(), Some(a));
+        assert_eq!(keys.next(), Some(b));
+        assert_eq!(keys.next(), Some(c));
+        assert_eq!(keys.next(), None);
+    }
+
+    #[test]
+    fn test_values() {
+        let mut map = IndexMap::new();
+        map.insert("a");
+        let b = map.insert("b");
+        map.insert("c");
+        map.remove(b);
+        let mut iter = map.values().map(|v| *v);
+        assert_eq!(iter.next(), Some("a"));
+        assert_eq!(iter.next(), Some("c"));
+        assert_eq!(iter.next(), None);
+
+        assert_eq!(b, map.insert("b"));
+        let mut iter = map.values().map(|v| *v);
+        assert_eq!(iter.next(), Some("a"));
+        assert_eq!(iter.next(), Some("b"));
+        assert_eq!(iter.next(), Some("c"));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_values_mut() {
+        let mut map = IndexMap::new();
+        map.insert(1);
+        map.insert(2);
+        map.insert(3);
+        map.values_mut().for_each(|val| *val *= 2);
+
+        let mut map = map.values().map(|v| *v);
+
+        assert_eq!(map.next(), Some(2));
+        assert_eq!(map.next(), Some(4));
+        assert_eq!(map.next(), Some(6));
+        assert_eq!(map.next(), None);
+    }
+}

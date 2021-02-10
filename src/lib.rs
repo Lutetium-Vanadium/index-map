@@ -150,3 +150,156 @@ impl<T> Default for IndexMap<T> {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{IndexMap, OptionIndex as OI};
+
+    fn assert_state<T: Eq + core::fmt::Debug>(
+        map: &IndexMap<T>,
+        data: &[OI<T>],
+        head: Option<usize>,
+    ) {
+        assert_eq!(map.data[..], data[..]);
+        assert_eq!(map.head, head);
+    }
+
+    #[test]
+    fn test_map() {
+        let mut map = IndexMap::new();
+
+        let _ = map.insert('a');
+        let b = map.insert('b');
+        let c = map.insert('c');
+        let _ = map.insert('d');
+        let e = map.insert('e');
+
+        assert_state(
+            &map,
+            &[
+                OI::Some('a'),
+                OI::Some('b'),
+                OI::Some('c'),
+                OI::Some('d'),
+                OI::Some('e'),
+            ],
+            None,
+        );
+
+        assert_eq!(map.remove(b), Some('b'));
+        assert_state(
+            &map,
+            &[
+                OI::Some('a'),
+                OI::NoIndex,
+                OI::Some('c'),
+                OI::Some('d'),
+                OI::Some('e'),
+            ],
+            Some(1),
+        );
+
+        assert_eq!(map.remove(e), Some('e'));
+        assert_state(
+            &map,
+            &[
+                OI::Some('a'),
+                OI::NoIndex,
+                OI::Some('c'),
+                OI::Some('d'),
+                OI::Index(1),
+            ],
+            Some(4),
+        );
+
+        assert_eq!(map.remove(c), Some('c'));
+        assert_state(
+            &map,
+            &[
+                OI::Some('a'),
+                OI::NoIndex,
+                OI::Index(4),
+                OI::Some('d'),
+                OI::Index(1),
+            ],
+            Some(2),
+        );
+
+        map.shrink_to_fit();
+        assert_state(
+            &map,
+            &[OI::Some('a'), OI::NoIndex, OI::Index(1), OI::Some('d')],
+            Some(2),
+        );
+    }
+
+    #[test]
+    fn test_shrink_to_fit() {
+        let mut map = IndexMap::new();
+
+        let a = map.insert('a');
+        let b = map.insert('b');
+        let c = map.insert('c');
+        let d = map.insert('d');
+        let e = map.insert('e');
+
+        map.remove(e);
+        map.remove(b);
+        map.remove(d);
+
+        assert_state(
+            &map,
+            &[
+                OI::Some('a'),
+                OI::Index(4),
+                OI::Some('c'),
+                OI::Index(1),
+                OI::NoIndex,
+            ],
+            Some(3),
+        );
+
+        map.shrink_to_fit();
+
+        assert_state(&map, &[OI::Some('a'), OI::NoIndex, OI::Some('c')], Some(1));
+
+        map.remove(c);
+        map.shrink_to_fit();
+
+        assert_state(&map, &[OI::Some('a')], None);
+
+        map.remove(a);
+        assert_state(&map, &[OI::NoIndex], Some(0));
+
+        map.shrink_to_fit();
+        assert_state(&map, &[], None);
+
+        let mut map = IndexMap::new();
+
+        let _ = map.insert('a');
+        let b = map.insert('b');
+        let _ = map.insert('c');
+        let d = map.insert('d');
+        let e = map.insert('e');
+
+        map.remove(b);
+        map.remove(d);
+        map.remove(e);
+
+        assert_state(
+            &map,
+            &[
+                OI::Some('a'),
+                OI::NoIndex,
+                OI::Some('c'),
+                OI::Index(1),
+                OI::Index(3),
+            ],
+            Some(4),
+        );
+
+        map.shrink_to_fit();
+
+        assert_state(&map, &[OI::Some('a'), OI::NoIndex, OI::Some('c')], Some(1));
+    }
+}
