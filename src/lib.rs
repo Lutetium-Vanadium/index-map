@@ -13,6 +13,7 @@ use alloc::vec::Vec;
 
 mod iter;
 mod option_index;
+pub use iter::{IntoIter, Iter, IterMut, Keys, Values, ValuesMut};
 use option_index::OptionIndex;
 
 /// A map of `usize` to value, which allows efficient O(1) indexing, and O(1) popping.
