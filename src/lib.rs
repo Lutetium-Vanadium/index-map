@@ -184,6 +184,10 @@ impl<T> IndexMap<T> {
         self.data.get(index)?.as_ref().into_inner()
     }
 
+    pub fn get_key_value(&self, index: usize) -> Option<(usize, &T)> {
+        Some((index, self.get(index)?))
+    }
+
     pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {
         self.data.get_mut(index)?.as_mut().into_inner()
     }
@@ -232,6 +236,22 @@ use core::fmt;
 impl<T: fmt::Debug> fmt::Debug for IndexMap<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_map().entries(self.iter()).finish()
+    }
+}
+
+use core::ops::{Index, IndexMut};
+
+impl<T> Index<usize> for IndexMap<T> {
+    type Output = T;
+
+    fn index(&self, key: usize) -> &T {
+        self.get(key).unwrap()
+    }
+}
+
+impl<T> IndexMut<usize> for IndexMap<T> {
+    fn index_mut(&mut self, key: usize) -> &mut T {
+        self.get_mut(key).unwrap()
     }
 }
 
