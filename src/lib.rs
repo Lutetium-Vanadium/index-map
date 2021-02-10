@@ -203,6 +203,7 @@ impl<T> IndexMap<T> {
                         OptionIndex::NoIndex
                     };
 
+                    self.len -= 1;
                     self.head = Some(i)
                 }
             }
