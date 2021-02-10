@@ -537,32 +537,28 @@ fn test_iter_mut_len() {
     assert_eq!(iter.len(), 3);
 }
 
-// Index is not implemented yet
-//
-// #[test]
-// fn test_index() {
-//     let mut map = HashMap::new();
-//
-//     map.insert(2);
-//     map.insert(1);
-//     map.insert(4);
-//
-//     assert_eq!(map[2], 4);
-// }
+#[test]
+fn test_index() {
+    let mut map = IM::new();
 
-// Index is not implemented yet
-//
-// #[test]
-// #[should_panic]
-// fn test_index_nonexistent() {
-//     let mut map = IM::new();
-//
-//     map.insert(2);
-//     map.insert(1);
-//     map.insert(4);
-//
-//     map[4];
-// }
+    map.insert(2);
+    map.insert(1);
+    map.insert(4);
+
+    assert_eq!(map[2], 4);
+}
+
+#[test]
+#[should_panic]
+fn test_index_nonexistent() {
+    let mut map = IM::new();
+
+    map.insert(2);
+    map.insert(1);
+    map.insert(4);
+
+    map[4];
+}
 
 // Entry API not implemented yet
 //
@@ -948,27 +944,7 @@ fn test_retain() {
 
     map.retain(|k, _| k % 2 == 0);
     assert_eq!(map.len(), 50);
-    // Index not implemented yet
-    // assert_eq!(map[2], 20);
-    // assert_eq!(map[4], 40);
-    // assert_eq!(map[6], 60);
+    assert_eq!(map[2], 20);
+    assert_eq!(map[4], 40);
+    assert_eq!(map[6], 60);
 }
-
-// Drain filter not implemented yet
-//
-// #[test]
-// fn test_drain_filter() {
-//     {
-//         let mut map: HashMap<i32, i32> = (0..8).map(|x| (x, x * 10)).collect();
-//         let drained = map.drain_filter(|&k, _| k % 2 == 0);
-//         let mut out = drained.collect::<Vec<_>>();
-//         out.sort_unstable();
-//         assert_eq!(vec![(0, 0), (2, 20), (4, 40), (6, 60)], out);
-//         assert_eq!(map.len(), 4);
-//     }
-//     {
-//         let mut map: HashMap<i32, i32> = (0..8).map(|x| (x, x * 10)).collect();
-//         drop(map.drain_filter(|&k, _| k % 2 == 0));
-//         assert_eq!(map.len(), 4);
-//     }
-// }
