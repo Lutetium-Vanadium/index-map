@@ -131,6 +131,31 @@ impl<T> IntoIterator for IndexMap<T> {
     }
 }
 
+pub struct Drain<'a, T> {
+    inner: Enumerate<alloc::vec::Drain<'a, OptionIndex<T>>>,
+    len: usize,
+}
+
+impl<T> Iterator for Drain<'_, T> {
+    type Item = (usize, T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        while let Some((i, item)) = self.inner.next() {
+            if let OptionIndex::Some(item) = item {
+                self.len -= 1;
+                return Some((i, item));
+            }
+        }
+        None
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.len, Some(self.len))
+    }
+}
+
+impl<T> ExactSizeIterator for Drain<'_, T> {}
+
 pub struct Keys<'a, T> {
     inner: Iter<'a, T>,
 }
@@ -235,6 +260,13 @@ impl<T> IndexMap<T> {
 
     pub fn iter_mut(&mut self) -> IterMut<'_, T> {
         <&mut IndexMap<T>>::into_iter(self)
+    }
+
+    pub fn drain(&mut self) -> Drain<'_, T> {
+        Drain {
+            len: self.len(),
+            inner: self.data.drain(..).enumerate(),
+        }
     }
 }
 

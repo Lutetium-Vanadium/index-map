@@ -230,7 +230,7 @@ fn test_empty_remove() {
 #[test]
 fn test_empty_iter() {
     let mut m: IM<bool> = IM::new();
-    // assert_eq!(m.drain().next(), None);
+    assert_eq!(m.drain().next(), None);
     assert_eq!(m.keys().next(), None);
     assert_eq!(m.values().next(), None);
     assert_eq!(m.values_mut().next(), None);
