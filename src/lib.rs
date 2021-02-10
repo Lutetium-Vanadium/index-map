@@ -64,6 +64,76 @@ impl<T> IndexMap<T> {
     }
 
     pub fn shrink_to_fit(&mut self) {
+        // This relies on the fact that `||` short-circuits. If `data` is empty, `head` *has* to be
+        // None, and so `data.last()` *cannot* be None.
+        if self.head.is_none() || self.data.last().unwrap().is_inner() {
+            self.data.shrink_to_fit();
+            return;
+        }
+
+        if self.is_empty() {
+            self.head = None;
+            self.data.clear();
+            self.data.shrink_to_fit();
+            return;
+        }
+
+        // random default value, the previous check makes sure there are elements, so the if
+        // condition has to be triggered.
+        let mut last = usize::MAX;
+
+        for (i, v) in self.data.iter().enumerate().rev() {
+            if v.is_inner() {
+                last = i;
+                break;
+            }
+        }
+
+        assert_ne!(last, usize::MAX);
+
+        let mut head = self.head.unwrap();
+        // If head is more than last, it needs to be set in such a way that head points to an
+        // index which is not truncated
+        //                   ,-- head [ 4 ]   |   Key:
+        // .---.---.---.---.---.              |   *     = element
+        // | * | - | * | * | 1 |              |   -     = No Index
+        // '---'---'---'---'---'              |   <int> = Index
+        //               ^-- last [ 3 ]       |
+        // Take the above data. After shrinking, it would be erroneous for head to still point
+        // to 4, since it will be deleted.
+        let mut should_set_head = head > last;
+
+        while let OptionIndex::Index(next) = self.data[head] {
+            if next > last {
+                // We can't use clone because `T` is not required to be clone, so no bound is
+                // added. We can't use `OptionIndex::take`, since we need the index intact for
+                // the next loop.
+                self.data[head] = match self.data[next] {
+                    OptionIndex::Index(i) => OptionIndex::Index(i),
+                    OptionIndex::NoIndex => OptionIndex::NoIndex,
+                    OptionIndex::Some(_) => {
+                        unreachable!("encountered value while walking index list")
+                    }
+                };
+            }
+
+            if should_set_head && head < last {
+                self.head = Some(head);
+                should_set_head = false;
+            }
+            head = next;
+        }
+
+        // The only index not checked is `head`, replace `self.head` based on it.
+        if should_set_head {
+            self.head = if head < last { Some(head) } else { None };
+        }
+
+        self.data[head] = OptionIndex::NoIndex;
+
+        // Truncate expects length, not the index of last element
+        self.data.truncate(last + 1);
+
         self.data.shrink_to_fit()
     }
 
