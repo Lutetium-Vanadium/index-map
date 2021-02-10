@@ -17,7 +17,7 @@ pub use iter::{IntoIter, Iter, IterMut, Keys, Values, ValuesMut};
 use option_index::OptionIndex;
 
 /// A map of `usize` to value, which allows efficient O(1) indexing, and O(1) popping.
-#[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
+#[derive(PartialEq, PartialOrd, Eq, Ord)]
 pub struct IndexMap<T> {
     data: Vec<OptionIndex<T>>,
     head: Option<usize>,
@@ -223,6 +223,14 @@ impl<T: Clone> Clone for IndexMap<T> {
 impl<T> Default for IndexMap<T> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+use core::fmt;
+
+impl<T: fmt::Debug> fmt::Debug for IndexMap<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_map().entries(self.iter()).finish()
     }
 }
 
