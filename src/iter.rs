@@ -1,16 +1,18 @@
 use super::{IndexMap, OptionIndex};
 use core::fmt;
-use core::iter::{Enumerate, IntoIterator, Iterator};
+use core::iter::{Enumerate, ExactSizeIterator, IntoIterator, Iterator};
 use core::slice;
 
 pub struct Iter<'a, T> {
     inner: Enumerate<slice::Iter<'a, OptionIndex<T>>>,
+    len: usize,
 }
 
 impl<T> Clone for Iter<'_, T> {
     fn clone(&self) -> Self {
         Self {
             inner: self.inner.clone(),
+            len: self.len,
         }
     }
 }
@@ -27,12 +29,19 @@ impl<'a, T> Iterator for Iter<'a, T> {
     fn next(&mut self) -> Option<Self::Item> {
         while let Some((i, item)) = self.inner.next() {
             if let OptionIndex::Some(val) = item {
+                self.len -= 1;
                 return Some((i, val));
             }
         }
         None
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.len, Some(self.len))
+    }
 }
+
+impl<T> ExactSizeIterator for Iter<'_, T> {}
 
 impl<'a, T> IntoIterator for &'a IndexMap<T> {
     type Item = (usize, &'a T);
@@ -41,6 +50,7 @@ impl<'a, T> IntoIterator for &'a IndexMap<T> {
     fn into_iter(self) -> Self::IntoIter {
         Iter {
             inner: self.data.iter().enumerate(),
+            len: self.len(),
         }
     }
 }
@@ -48,6 +58,7 @@ impl<'a, T> IntoIterator for &'a IndexMap<T> {
 #[derive(Debug)]
 pub struct IterMut<'a, T> {
     inner: Enumerate<slice::IterMut<'a, OptionIndex<T>>>,
+    len: usize,
 }
 
 impl<'a, T> Iterator for IterMut<'a, T> {
@@ -56,12 +67,19 @@ impl<'a, T> Iterator for IterMut<'a, T> {
     fn next(&mut self) -> Option<Self::Item> {
         while let Some((i, item)) = self.inner.next() {
             if let OptionIndex::Some(val) = item {
+                self.len -= 1;
                 return Some((i, val));
             }
         }
         None
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.len, Some(self.len))
+    }
 }
+
+impl<T> ExactSizeIterator for IterMut<'_, T> {}
 
 impl<'a, T> IntoIterator for &'a mut IndexMap<T> {
     type Item = (usize, &'a mut T);
@@ -69,6 +87,7 @@ impl<'a, T> IntoIterator for &'a mut IndexMap<T> {
 
     fn into_iter(self) -> Self::IntoIter {
         IterMut {
+            len: self.len(),
             inner: self.data.iter_mut().enumerate(),
         }
     }
@@ -77,6 +96,7 @@ impl<'a, T> IntoIterator for &'a mut IndexMap<T> {
 #[derive(Clone)]
 pub struct IntoIter<T> {
     inner: Enumerate<alloc::vec::IntoIter<OptionIndex<T>>>,
+    len: usize,
 }
 
 impl<T> Iterator for IntoIter<T> {
@@ -85,12 +105,19 @@ impl<T> Iterator for IntoIter<T> {
     fn next(&mut self) -> Option<Self::Item> {
         while let Some((i, item)) = self.inner.next() {
             if let OptionIndex::Some(item) = item {
+                self.len -= 1;
                 return Some((i, item));
             }
         }
         None
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.len, Some(self.len))
+    }
 }
+
+impl<T> ExactSizeIterator for IntoIter<T> {}
 
 impl<T> IntoIterator for IndexMap<T> {
     type Item = (usize, T);
@@ -98,6 +125,7 @@ impl<T> IntoIterator for IndexMap<T> {
 
     fn into_iter(self) -> Self::IntoIter {
         IntoIter {
+            len: self.len(),
             inner: self.data.into_iter().enumerate(),
         }
     }
@@ -127,7 +155,13 @@ impl<'a, T> Iterator for Keys<'a, T> {
     fn next(&mut self) -> Option<Self::Item> {
         Some(self.inner.next()?.0)
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.inner.len, Some(self.inner.len))
+    }
 }
+
+impl<T> ExactSizeIterator for Keys<'_, T> {}
 
 pub struct Values<'a, T> {
     inner: Iter<'a, T>,
@@ -153,7 +187,13 @@ impl<'a, T> Iterator for Values<'a, T> {
     fn next(&mut self) -> Option<Self::Item> {
         Some(self.inner.next()?.1)
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.inner.len, Some(self.inner.len))
+    }
 }
+
+impl<T> ExactSizeIterator for Values<'_, T> {}
 
 #[derive(Debug)]
 pub struct ValuesMut<'a, T> {
@@ -166,7 +206,13 @@ impl<'a, T> Iterator for ValuesMut<'a, T> {
     fn next(&mut self) -> Option<Self::Item> {
         Some(self.inner.next()?.1)
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.inner.len, Some(self.inner.len))
+    }
 }
+
+impl<T> ExactSizeIterator for ValuesMut<'_, T> {}
 
 impl<T> IndexMap<T> {
     pub fn keys(&self) -> Keys<'_, T> {
