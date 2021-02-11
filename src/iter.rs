@@ -3,6 +3,19 @@ use core::fmt;
 use core::iter::{Enumerate, ExactSizeIterator, IntoIterator, Iterator};
 use core::slice;
 
+/// An iterator over the entries of a `IndexMap`.
+///
+/// This `struct` is created by the [`iter`](IndexMap::iter) method on [`IndexMap`]. See its
+/// documentation for more.
+///
+/// # Example
+/// ```
+/// use index_map::IndexMap;
+///
+/// let mut map = IndexMap::new();
+/// map.insert("a");
+/// let iter = map.iter();
+/// ```
 pub struct Iter<'a, T> {
     inner: Enumerate<slice::Iter<'a, OptionIndex<T>>>,
     len: usize,
@@ -55,6 +68,19 @@ impl<'a, T> IntoIterator for &'a IndexMap<T> {
     }
 }
 
+/// A mutable iterator over the entries of a `IndexMap`.
+///
+/// This `struct` is created by the [`iter_mut`](IndexMap::iter_mut) method on [`IndexMap`]. See its
+/// documentation for more.
+///
+/// # Example
+/// ```
+/// use index_map::IndexMap;
+///
+/// let mut map = IndexMap::new();
+/// map.insert("a");
+/// let iter = map.iter_mut();
+/// ```
 #[derive(Debug)]
 pub struct IterMut<'a, T> {
     inner: Enumerate<slice::IterMut<'a, OptionIndex<T>>>,
@@ -93,6 +119,19 @@ impl<'a, T> IntoIterator for &'a mut IndexMap<T> {
     }
 }
 
+/// An owning iterator over the entries of a `IndexMap`.
+///
+/// This `struct` is created by the [`into_iter`](IndexMap::into_iter) method on [`IndexMap`]
+/// (provided by the `IntoIterator` trait). See its documentation for more.
+///
+/// # Example
+/// ```
+/// use index_map::IndexMap;
+///
+/// let mut map = IndexMap::new();
+/// map.insert("a");
+/// let iter = map.into_iter();
+/// ```
 #[derive(Clone)]
 pub struct IntoIter<T> {
     inner: Enumerate<alloc::vec::IntoIter<OptionIndex<T>>>,
@@ -131,6 +170,19 @@ impl<T> IntoIterator for IndexMap<T> {
     }
 }
 
+/// A draining iterator over the entries of a `IndexMap`.
+///
+/// This `struct` is created by the [`drain`](IndexMap::drain) method on [`IndexMap`]. See its
+/// documentation for more.
+///
+/// # Example
+/// ```
+/// use index_map::IndexMap;
+///
+/// let mut map = IndexMap::new();
+/// map.insert("a");
+/// let iter = map.drain();
+/// ```
 pub struct Drain<'a, T> {
     inner: Enumerate<alloc::vec::Drain<'a, OptionIndex<T>>>,
     len: usize,
@@ -156,6 +208,19 @@ impl<T> Iterator for Drain<'_, T> {
 
 impl<T> ExactSizeIterator for Drain<'_, T> {}
 
+/// An iterator over the keys of a `IndexMap`.
+///
+/// This `struct` is created by the [`keys`](IndexMap::keys) method on [`IndexMap`]. See its
+/// documentation for more.
+///
+/// # Example
+/// ```
+/// use index_map::IndexMap;
+///
+/// let mut map = IndexMap::new();
+/// map.insert("a");
+/// let iter_keys = map.keys();
+/// ```
 pub struct Keys<'a, T> {
     inner: Iter<'a, T>,
 }
@@ -188,6 +253,19 @@ impl<'a, T> Iterator for Keys<'a, T> {
 
 impl<T> ExactSizeIterator for Keys<'_, T> {}
 
+/// An iterator over the values of a `IndexMap`.
+///
+/// This `struct` is created by the [`values`](IndexMap::values) method on [`IndexMap`]. See its
+/// documentation for more.
+///
+/// # Example
+/// ```
+/// use index_map::IndexMap;
+///
+/// let mut map = IndexMap::new();
+/// map.insert("a");
+/// let iter_values = map.values();
+/// ```
 pub struct Values<'a, T> {
     inner: Iter<'a, T>,
 }
@@ -220,6 +298,19 @@ impl<'a, T> Iterator for Values<'a, T> {
 
 impl<T> ExactSizeIterator for Values<'_, T> {}
 
+/// A mutable iterator over the values of a `IndexMap`.
+///
+/// This `struct` is created by the [`values_mut`](IndexMap::values_mut) method on [`IndexMap`]. See
+/// its documentation for more.
+///
+/// # Example
+/// ```
+/// use index_map::IndexMap;
+///
+/// let mut map = IndexMap::new();
+/// map.insert("a");
+/// let iter_values = map.values_mut();
+/// ```
 #[derive(Debug)]
 pub struct ValuesMut<'a, T> {
     inner: IterMut<'a, T>,
@@ -240,31 +331,142 @@ impl<'a, T> Iterator for ValuesMut<'a, T> {
 impl<T> ExactSizeIterator for ValuesMut<'_, T> {}
 
 impl<T> IndexMap<T> {
+    /// An iterator visiting all keys in ascending order.
+    /// The iterator element type is `usize`.
+    ///
+    /// # Examples
+    /// ```
+    /// use index_map::IndexMap;
+    ///
+    /// let mut map = IndexMap::new();
+    /// map.insert("a");
+    /// map.insert("b");
+    /// map.insert("c");
+    ///
+    /// for key in map.keys() {
+    ///     println!("{}", key);
+    /// }
+    /// ```
     pub fn keys(&self) -> Keys<'_, T> {
         Keys { inner: self.iter() }
     }
 
+    /// An iterator visiting all values in ascending order of their keys.
+    /// The iterator element type is `&T`.
+    ///
+    /// # Examples
+    /// ```
+    /// use index_map::IndexMap;
+    ///
+    /// let mut map = IndexMap::new();
+    /// map.insert("a");
+    /// map.insert("b");
+    /// map.insert("c");
+    ///
+    /// for val in map.values() {
+    ///     println!("{}", val);
+    /// }
+    /// ```
     pub fn values(&self) -> Values<'_, T> {
         Values { inner: self.iter() }
     }
 
+    /// An iterator visiting all values mutably in ascending order of their keys.
+    /// The iterator element type is `&mut T`.
+    ///
+    /// # Examples
+    /// ```
+    /// use index_map::IndexMap;
+    ///
+    /// let mut map = IndexMap::new();
+    /// map.insert(2);
+    /// map.insert(4);
+    /// map.insert(6);
+    ///
+    /// for val in map.values_mut() {
+    ///     *val *= 2;
+    /// }
+    ///
+    /// for val in map.values() {
+    ///     println!("{}", val);
+    /// }
+    /// ```
     pub fn values_mut(&mut self) -> ValuesMut<'_, T> {
         ValuesMut {
             inner: self.iter_mut(),
         }
     }
 
+    /// An iterator visiting all key-value pairs in ascending order of keys.
+    /// The iterator element type is `(usize, &T)`.
+    ///
+    /// # Examples
+    /// ```
+    /// use index_map::IndexMap;
+    ///
+    /// let mut map = IndexMap::new();
+    /// map.insert("a");
+    /// map.insert("b");
+    /// map.insert("c");
+    ///
+    /// for (key, val) in map.iter() {
+    ///     println!("key: {} val: {}", key, val);
+    /// }
+    /// ```
     pub fn iter(&self) -> Iter<'_, T> {
         <&IndexMap<T>>::into_iter(self)
     }
 
+    /// An iterator visiting all key-value pairs in ascending order of keys, with mutable references
+    /// to the values.
+    /// The iterator element type is `(usize, &mut T)`.
+    ///
+    /// # Examples
+    /// ```
+    /// use index_map::IndexMap;
+    ///
+    /// let mut map = IndexMap::new();
+    /// map.insert(2);
+    /// map.insert(4);
+    /// map.insert(6);
+    ///
+    /// // Update all values
+    /// for (_, val) in map.iter_mut() {
+    ///     *val *= 2;
+    /// }
+    ///
+    /// for (key, val) in map.iter() {
+    ///     println!("key: {} val: {}", key, val);
+    /// }
+    /// ```
     pub fn iter_mut(&mut self) -> IterMut<'_, T> {
         <&mut IndexMap<T>>::into_iter(self)
     }
 
+    /// Clears the map, returning all key-value pairs as an iterator. Keeps the
+    /// allocated memory for reuse.
+    ///
+    /// # Examples
+    /// ```
+    /// use index_map::IndexMap;
+    ///
+    /// let mut a = IndexMap::new();
+    /// a.insert("a");
+    /// a.insert("b");
+    ///
+    /// let mut iter = a.drain();
+    /// assert_eq!(iter.next(), Some((0, "a")));
+    /// assert_eq!(iter.next(), Some((1, "b")));
+    /// assert_eq!(iter.next(), None);
+    /// # drop(iter);
+    ///
+    /// assert!(a.is_empty());
+    /// ```
     pub fn drain(&mut self) -> Drain<'_, T> {
+        let len = self.len();
+        self.len = 0;
         Drain {
-            len: self.len(),
+            len,
             inner: self.data.drain(..).enumerate(),
         }
     }
