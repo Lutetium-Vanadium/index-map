@@ -1,8 +1,8 @@
 # Index Map
 
 ![build](https://github.com/Lutetium-Vanadium/index-map/workflows/Tests/badge.svg)
-[![Crates.io](https://img.shields.io/crates/v/hashbrown.svg)](https://crates.io/crates/index-map)
-[![Crates.io](https://img.shields.io/crates/l/hashbrown.svg)](./LICENSE)
+[![Crates.io](https://img.shields.io/crates/v/index-map.svg)](https://crates.io/crates/index-map)
+[![Crates.io](https://img.shields.io/crates/l/index-map.svg)](./LICENSE)
 [![Documentation](https://docs.rs/index-map/badge.svg)](https://docs.rs/index-map)
 
 A map with automatically generated `usize`s as keys. It supports
