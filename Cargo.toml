@@ -3,6 +3,15 @@ name = "index-map"
 version = "0.1.0"
 authors = ["Lutetium-Vanadium"]
 edition = "2018"
+description = "A map with automatically generated usizes as keys"
+homepage="https://github.com/Lutetium-Vanadium/index-map#readme"
+repository = "https://github.com/Lutetium-Vanadium/index-map"
+documentation="https://docs.rs/index-map"
+readme = "README.md"
+license = "MIT"
+keywords = ["no_std", "map"]
+categories = ["data-structures", "no-std"]
+exclude = [".github/*"]
 
 [dev-dependencies]
 criterion = "0.3.4"
