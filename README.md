@@ -103,4 +103,5 @@ for (pid, process) in &process_table {
 ## Contribution
 
 If you find any bugs or issues, or you want some feature added, feel
-free to open an issue or pull request.
+free to open an [issue](https://github.com/Lutetium-Vanadium/index-map/issues/new)
+or a [pull request](https://github.com/Lutetium-Vanadium/index-map/compare).
