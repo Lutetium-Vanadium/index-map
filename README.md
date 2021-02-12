@@ -23,18 +23,18 @@ require automatically generated keys.
 
 ## Performance
 
-Due to its simplicity nature, it performs better than `HashMap`.
+Due to its simplicity nature, it performs slightly better than `HashMap`.
 
 | name         | IndexMap [ns/iter] | HashMap [ns/iter] | diff [ns/iter] | diff %  | speedup |
 | ------------ | ------------------ | ----------------- | -------------- | ------- | ------- |
-| insert       | 40,057             | 75,381            | -35,324        | -46.86% | 1.88x   |
-| grow_insert  | 12,553             | 100,530           | -87,977        | -87.51% | 8.01x   |
-| insert_erase | 9,572              | 12,370            | -2,798         | -22.62% | 1.29x   |
-| lookup       | 1,491              | 24,253            | -22,762        | -93.85% | 16.27x  |
-| lookup_fail  | 1.289              | 2.092             | -0.8           | -38.38% | 1.62x   |
-| bench_iter   | 1,812              | 1,888             | -76            | -4.03%  | 1.04x   |
-| clone_small  | 120.30             | 163.70            | -43.4          | -26.51% | 1.36x   |
-| clone_large  | 9,635              | 13,041            | -34,06         | -26.12% | 1.35x   |
+| insert       | 38,395             | 52,829            | -14,434        | -27.32% | 1.38x   |
+| grow_insert  | 11,970             | 44,681            | -32,711        | -73.21% | 3.73x   |
+| insert_erase | 9,429              | 12,563            | -3,134         | -24.95% | 1.33x   |
+| lookup       | 1,479              | 4,202             | -2,723         | -64.80% | 2.84x   |
+| lookup_fail  | 1.271              | 1.709             | -0.438         | -25.63% | 1.34x   |
+| bench_iter   | 1,788              | 2,423             | -635           | -26.21% | 1.36x   |
+| clone_small  | 114.49             | 158.66            | -44.17         | -27.84% | 1.39x   |
+| clone_large  | 8,693              | 12,517            | -3,824         | -30.55% | 1.44x   |
 
 The benchmarks performed here are the same as present in the hashbrown
 repo: [bench.rs](https://github.com/rust-lang/hashbrown/blob/master/benches/bench.rs)

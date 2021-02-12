@@ -1,11 +1,15 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use index_map::IndexMap;
+use rustc_hash::{FxHashMap, FxHasher};
 use std::collections::HashMap;
+use std::hash::BuildHasherDefault;
 use std::ops::Range;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 const SIZE: usize = 1000;
 const KEY_DIST: Range<usize> = 0..SIZE;
+
+type FxBuildHasher = BuildHasherDefault<FxHasher>;
 
 // Just an arbitrary side effect to make the maps not shortcircuit to the non-dropping path
 // when dropping maps/entries (most real world usages likely have drop in the key or value)
@@ -35,7 +39,7 @@ fn insert(c: &mut Criterion) {
     });
 
     if BENCH_HASHMAP {
-        let mut m = HashMap::with_capacity(SIZE);
+        let mut m = HashMap::with_capacity_and_hasher(SIZE, FxBuildHasher::default());
         c.bench_function("hash_map-insert", |b| {
             b.iter(|| {
                 m.clear();
@@ -62,7 +66,7 @@ fn grow_insert(c: &mut Criterion) {
     if BENCH_HASHMAP {
         c.bench_function("hash_map-grow_insert", |b| {
             b.iter(|| {
-                let mut m = HashMap::new();
+                let mut m = FxHashMap::default();
                 for i in KEY_DIST.take(SIZE) {
                     m.insert(i, DropType(i));
                 }
@@ -94,7 +98,7 @@ fn insert_erase(c: &mut Criterion) {
     });
 
     if BENCH_HASHMAP {
-        let mut base = HashMap::new();
+        let mut base = FxHashMap::default();
         for i in KEY_DIST.take(SIZE) {
             base.insert(i, DropType(i));
         }
@@ -131,7 +135,7 @@ fn lookup(c: &mut Criterion) {
     });
 
     if BENCH_HASHMAP {
-        let mut m = HashMap::new();
+        let mut m = FxHashMap::default();
         for i in KEY_DIST.take(SIZE) {
             m.insert(i, DropType(i));
         }
@@ -162,7 +166,7 @@ fn lookup_fail(c: &mut Criterion) {
     });
 
     if BENCH_HASHMAP {
-        let mut m = HashMap::new();
+        let mut m = FxHashMap::default();
         let mut iter = KEY_DIST;
         for i in (&mut iter).take(SIZE) {
             m.insert(i, DropType(i));
@@ -193,7 +197,7 @@ fn bench_iter(c: &mut Criterion) {
     });
 
     if BENCH_HASHMAP {
-        let mut m = HashMap::new();
+        let mut m = FxHashMap::default();
         for i in KEY_DIST.take(SIZE) {
             m.insert(i, DropType(i));
         }
@@ -221,7 +225,7 @@ fn clone_small(c: &mut Criterion) {
     });
 
     if BENCH_HASHMAP {
-        let mut m = HashMap::new();
+        let mut m = FxHashMap::default();
         for i in 0..10 {
             m.insert(i, DropType(i));
         }
@@ -247,7 +251,7 @@ fn clone_large(c: &mut Criterion) {
     });
 
     if BENCH_HASHMAP {
-        let mut m = HashMap::new();
+        let mut m = FxHashMap::default();
         for i in 0..1000 {
             m.insert(i, DropType(i));
         }
